@@ -15,26 +15,6 @@ All methods proposed in the paper are implemented in the open-source tool
 [*MQT SCPD*](https://github.com/munich-quantum-toolkit/scpd), which is part of the
 [*Munich Quantum Toolkit* (MQT)](https://mqt.readthedocs.io).
 
-## Design Automation Flow
-
-The paper formalizes the layout of a planar superconducting quantum chip as a geometric problem. Qubits, tunable
-couplers, and launchers become routing obstacles with terminals, and three types of wires have to be routed between
-them:
-
-- *Launcher-to-port lines* (*W*<sub>p</sub>) connect a launcher to a qubit control terminal or a coupler flux terminal.
-- *Resonators* (*W*<sub>r</sub>) are fixed-length wires from a CPW coupler on a feedline to a qubit readout terminal.
-- *Feedlines* (*W*<sub>f</sub>) run from one launcher through a sequence of CPW couplers to another launcher.
-
-Wire crossings are resolved with airbridges. Based on this abstraction, the proposed flow generates a routed layout in
-three steps:
-
-1. **Global Partitioning** detects narrow passages (bottlenecks) and enclosed regions (cavities) in the chip geometry
-   and divides the chip into regions with limited routing capacities.
-2. **Port Assignment Computation** assigns all wires to their terminals using Integer Linear Programming (ILP),
-   minimizing the number of bridges and the expected wire length.
-3. **Routing** realizes the wires in a four-stage hierarchical pipeline: global routing, detailed routing,
-   curvature-aware Dubins A\* routing with meander insertion for the resonators, and feedline routing.
-
 ## Repository Structure
 
 ```text
