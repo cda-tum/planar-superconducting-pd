@@ -8,7 +8,8 @@
 </p>
 
 This repository provides supplementary data for the paper *Physical Design Automation for Planar Superconducting
-Quantum Chips* by **[PLACEHOLDER: authors]** submitted to **[PLACEHOLDER: venue]** (under review).
+Quantum Chips* by **Michael Feldmeier, Marcel Walter, Gerhard B.P. Huber, Anirban Bhattacharjee, Stefan Filipp, and
+Robert Wille** submitted to TCAD (under review).
 
 All methods proposed in the paper are implemented in the open-source tool
 [*MQT SCPD*](https://github.com/munich-quantum-toolkit/scpd), which is part of the
@@ -76,18 +77,17 @@ target resonator length *d*<sub>fix</sub> and the maximum feedline capacity *r*<
 *d*<sub>fix</sub> + 3000 µm.
 
 <p align="center">
-  <img src="layouts/unrouted/svg/4q_unrouted.svg" width="48%" alt="Unrouted 4Q layout">
-  <img src="layouts/routed/svg/4q_routed.svg" width="48%" alt="Routed 4Q layout">
+  <img src="layouts/unrouted/svg/33q_unrouted.svg" width="48%" alt="Unrouted 33Q layout">
+  <img src="layouts/routed/svg/33q_routed.svg" width="48%" alt="Routed 33Q layout">
 </p>
 
 ### Unrouted Layouts
 
 The unrouted layouts in [`layouts/unrouted/`](layouts/unrouted) are the input of the flow: the geometry of all qubits,
-couplers, and launchers, abstracted to the polygons that act as routing obstacles.
+couplers, and launchers before any wire is routed.
 
-The SVG files draw these polygons in blue and mark the terminals by their role: launcher terminals in red, qubit
-readout terminals in yellow, qubit control and coupler flux terminals in green, and coupler bridge terminals in purple.
-A legend at the bottom of each file states the number of terminals per role.
+The SVG files render the physical design of each chip before routing, in the same style as the
+[routed layouts](#routed-layouts).
 
 ### Routed Layouts
 
