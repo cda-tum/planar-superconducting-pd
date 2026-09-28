@@ -130,23 +130,20 @@ $ git clone --depth 1 https://github.com/cda-tum/planar-superconducting-pd.git
 $ cd planar-superconducting-pd
 ```
 
-Then point MQT SCPD at the configuration of a chip:
+Then check a chip and route it:
 
 ```console
-$ mqt-scpd doctor -c inputs/33q/config.toml                  # check the chip and its configuration
-$ mqt-scpd plot -c inputs/33q/config.toml -o 33q.svg         # draw the unrouted chip
-$ mqt-scpd render -c inputs/33q/config.toml -o 33q.gds       # write it as GDSII
+$ mqt-scpd doctor -c inputs/33q/config.toml                   # check the chip and its configuration
+$ mqt-scpd route -c inputs/33q/config.toml -o run-33q/        # run the complete flow
+$ mqt-scpd render run-33q/ --stage aligned -o 33q_routed.gds  # write the routed chip as GDSII
+$ mqt-scpd plot run-33q/ --stage aligned -o 33q_routed.svg    # draw it
 ```
 
 `doctor` is the one to run first: it prints how many ports fell into each role and which outer port ring the run
-uses, and it names the offending key when the configuration and the chip do not fit together. The GDS file that
-`render` writes has the obstacles on layer 1/0, like [`layouts/unrouted/gds/`](layouts/unrouted/gds), and the port
-labels on layer 10.
-
-MQT SCPD is being ported from the research prototype that produced the results of the paper, one stage at a time.
-Until the routing stages have arrived, it checks, draws, and exports the chip inputs but does not route them yet; the
-routed layouts and the [quality of results](#quality-of-results) come from the prototype. The
-[MQT SCPD documentation](https://mqt.readthedocs.io/projects/scpd) states what the current release can do.
+uses, and it names the offending key when the configuration and the chip do not fit together. `route` writes every
+stage of the flow into the run directory, together with `metrics.json`, which carries the metrics of
+[Table I](#quality-of-results). `render` and `plot` without a run directory take `-c` and draw the unrouted chip,
+with the obstacles on layer 1/0 like [`layouts/unrouted/gds/`](layouts/unrouted/gds).
 
 ## Quality of Results
 
