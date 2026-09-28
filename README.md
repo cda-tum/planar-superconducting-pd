@@ -19,6 +19,10 @@ All methods proposed in the paper are implemented in the open-source tool
 
 ```text
 .
+├── inputs/
+│   └── <chip>/
+│       ├── config.toml           routing configuration: port roles, outer port ring, design rules
+│       └── routing_config.json   chip input: obstacle polygons and named ports
 ├── layouts/
 │   ├── unrouted/
 │   │   ├── gds/    benchmark chips before routing (GDSII)
@@ -30,13 +34,13 @@ All methods proposed in the paper are implemented in the open-source tool
     └── qor.csv     quality-of-results metrics of all benchmarks (Table I of the paper)
 ```
 
-All files are named after their benchmark, e.g., `33q_unrouted.gds` or `33q_routed.svg`.
+All files are named after their benchmark, e.g., `inputs/33q/`, `33q_unrouted.gds`, or `33q_routed.svg`.
 
 ## Benchmark Layouts
 
 The flow is evaluated on eight planar chips with 4 to 69 qubits. The chip inputs (obstacle polygons, terminals, and
-routing configuration) are distributed with [*MQT SCPD*](https://github.com/munich-quantum-toolkit/scpd) in its
-`benchmarks/` folder.
+routing configuration) are in [`inputs/`](inputs); see [Running the Benchmarks](#running-the-benchmarks) for how to use
+them with [*MQT SCPD*](https://github.com/munich-quantum-toolkit/scpd).
 
 | Benchmark | Topology                                            | Layout size (W × H) [mm²] | Launcher ports |
 |-----------|-----------------------------------------------------|--------------------------:|---------------:|
@@ -59,6 +63,31 @@ target resonator length *d*<sub>fix</sub> and the maximum feedline capacity *r*<
   <img src="layouts/unrouted/svg/33q_unrouted.svg" width="48%" alt="Unrouted 33Q layout">
   <img src="layouts/routed/svg/33q_routed.svg" width="48%" alt="Routed 33Q layout">
 </p>
+
+### Chip Inputs
+
+Each directory in [`inputs/`](inputs) holds the two files that MQT SCPD reads for one chip:
+
+- `routing_config.json` is the chip itself: the obstacle polygons and the named ports a wire can start or end at, in
+  layout units (µm).
+- `config.toml` says how to route it. `[ports.patterns]` gives one regular expression per port role (launcher,
+  resonator, conventional), and every port must match exactly one of them. `[ports.sequences]` lists the outer port
+  ring in order (`all_outer`) and the subset of it that stays fixed (`fixed_outer`). `[design_rules]` carries the
+  design rules of the paper, with the target resonator length *d*<sub>fix</sub> and the feedline capacity
+  *r*<sub>util</sub> of [Table I](#quality-of-results). `[grid]`, where present, sizes the coarse capacity grid.
+
+The obstacles of every chip input are exactly the polygons of its unrouted GDS file on layer 1/0.
+
+| Chip  | Obstacles | Ports | Outer ring | Fixed outer ports |
+|-------|----------:|------:|-----------:|------------------:|
+| `4q`  |        28 |    36 |         12 |                12 |
+| `9q`  |        49 |   102 |         40 |                21 |
+| `17q` |        95 |   202 |         76 |                44 |
+| `21q` |       133 |   254 |        110 |                62 |
+| `33q` |       193 |   382 |        182 |               102 |
+| `45q` |       253 |   510 |        255 |               143 |
+| `57q` |       313 |   646 |        323 |               179 |
+| `69q` |       385 |   790 |        395 |               219 |
 
 ### Unrouted Layouts
 
@@ -90,6 +119,31 @@ single top cell is named after the chip, e.g., `33Q_routed`. The files use the f
 | 3/0   | couplers       | CPW couplers between resonators and feedlines, drawn as their 200 µm × 182 µm footprint on the feedline         |          |   ✓    |
 | 4/0   | bridges        | Airbridges at wire crossings                                                                                      |          |   ✓    |
 | 5/0   | wire clearance | Zone of width *d*<sub>clear</sub> = 185 µm centered on every wire; the zones of two parallel wires touch at a center distance of exactly *d*<sub>clear</sub> |          |   ✓    |
+
+## Running the Benchmarks
+
+Install MQT SCPD with its KLayout extra and clone this repository:
+
+```console
+$ pip install "mqt-scpd[klayout]"
+$ git clone --depth 1 https://github.com/cda-tum/planar-superconducting-pd.git
+$ cd planar-superconducting-pd
+```
+
+Then check a chip and route it:
+
+```console
+$ mqt-scpd doctor -c inputs/33q/config.toml                   # check the chip and its configuration
+$ mqt-scpd route -c inputs/33q/config.toml -o run-33q/        # run the complete flow
+$ mqt-scpd render run-33q/ --stage aligned -o 33q_routed.gds  # write the routed chip as GDSII
+$ mqt-scpd plot run-33q/ --stage aligned -o 33q_routed.svg    # draw it
+```
+
+`doctor` is the one to run first: it prints how many ports fell into each role and which outer port ring the run
+uses, and it names the offending key when the configuration and the chip do not fit together. `route` writes every
+stage of the flow into the run directory, together with `metrics.json`, which carries the metrics of
+[Table I](#quality-of-results). `render` and `plot` without a run directory take `-c` and draw the unrouted chip,
+with the obstacles on layer 1/0 like [`layouts/unrouted/gds/`](layouts/unrouted/gds).
 
 ## Quality of Results
 
