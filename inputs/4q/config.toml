@@ -6,9 +6,9 @@
 #
 # Licensed under the MIT License
 
-# The 4-qubit benchmark chip of the paper, as MQT SCPD reads it. Every design
-# rule is written out; every other key is present only when it differs from
-# the default.
+# The 4-qubit benchmark chip of the paper, as MQT SCPD reads and plans it. Every
+# design rule is written out; every other key is present only when it differs
+# from the default.
 
 [chip]
 input = "routing_config.json"
@@ -16,7 +16,13 @@ input = "routing_config.json"
 [ports.patterns]
 launcher = '^Chip\.port\d+$'
 resonator = '^Q\d+\.port0$'
-conventional = '^(Q\d+\.port1|C\d+\.port[0-2])$'
+conventional = '^(Q\d+\.port1|C\d+\.port0)$'
+bridge_pair = '^C\d+\.port[12]$'
+component = '^([^.]+)\.port\d+$'
+
+[[ports.bridge_pairs]]
+first = '^(C\d+)\.port1$'
+second = '^(C\d+)\.port2$'
 
 [ports.sequences]
 all_outer = [
@@ -40,5 +46,14 @@ feedline_terminations = 0
 
 [grid]
 capacity_cells_x = 12
-launcher_offset_x = 5
-launcher_offset_y = 5
+# The launcher slot sits on the launcher port, so the blocked border of the
+# capacity grid must not cover it. A port inside the border is a freed cell in a
+# wall that no capacity chain reaches, and the partitioning around it collapses.
+launcher_offset_x = 7
+launcher_offset_y = 7
+
+[stages.assignment]
+# How many feedline chain ends the assignment puts on a launcher; every other
+# chain end is a termination. A figure per chip with no default, taken from the
+# research prototype's run of the same benchmark.
+launcher_target = 2

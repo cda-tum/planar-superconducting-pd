@@ -70,13 +70,34 @@ Each directory in [`inputs/`](inputs) holds the two files that MQT SCPD reads fo
 
 - `routing_config.json` is the chip itself: the obstacle polygons and the named ports a wire can start or end at, in
   layout units (µm).
-- `config.toml` says how to route it. `[ports.patterns]` gives one regular expression per port role (launcher,
-  resonator, conventional), and every port must match exactly one of them. `[ports.sequences]` lists the outer port
-  ring in order (`all_outer`) and the subset of it that stays fixed (`fixed_outer`). `[design_rules]` carries the
-  design rules of the paper, with the target resonator length *d*<sub>fix</sub> and the feedline capacity
-  *r*<sub>util</sub> of [Table I](#quality-of-results). `[grid]`, where present, sizes the coarse capacity grid.
+- `config.toml` says how to plan and route it. `[ports.patterns]` gives one regular expression per port role
+  (launcher, resonator, conventional, bridge port), and every port must match exactly one of them. `[ports.sequences]`
+  lists the outer port ring in order (`all_outer`) and the subset of it that stays fixed (`fixed_outer`).
+  `[design_rules]` carries the design rules of the paper, with the target resonator length *d*<sub>fix</sub> and the
+  feedline capacity *r*<sub>util</sub> of [Table I](#quality-of-results). `[grid]` sizes the coarse capacity grid.
 
 The obstacles of every chip input are exactly the polygons of its unrouted GDS file on layer 1/0.
+
+The planning stages of MQT SCPD (`mqt-scpd plan`) read these keys as well:
+
+| Key                                             | Why the planning stages need it                                                                                                                                                                           |
+|-------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `[ports.patterns] conventional`, `bridge_pair`  | A coupler port where a wire crosses the coupler is a bridge port, not a conventional one. Only `port0` of a coupler ends a wire.                                                                          |
+| `[ports.patterns] component`                    | The planning groups the ports of one component: the inner circuit has to reach the ports of a qubit, and a wire may cross a coupler between two of its ports.                                             |
+| `[[ports.bridge_pairs]]`                        | Which two bridge ports of one coupler a wire crosses between: `port1` with `port2`, and `port3` with `port4`.                                                                                             |
+| `[grid] launcher_offset_x`, `launcher_offset_y` | The capacity grid blocks a border of this many detail cells. The launcher slot sits on the launcher port, so the border must not cover it; on most chips it is therefore zero.                            |
+| `[stages.assignment] launcher_target`           | How many feedline chain ends the assignment puts on a launcher; every other chain end is a termination. A figure per chip with no default, taken from the research prototype's run of the same benchmark. |
+
+| Chip  | `launcher_target` | Launcher offset |
+|-------|------------------:|----------------:|
+| `4q`  |                 2 |               7 |
+| `9q`  |                 3 |               5 |
+| `17q` |                 7 |               0 |
+| `21q` |                10 |               0 |
+| `33q` |                14 |               0 |
+| `45q` |                15 |               0 |
+| `57q` |                18 |    15 (default) |
+| `69q` |                24 |               0 |
 
 | Chip  | Obstacles | Ports | Outer ring | Fixed outer ports |
 |-------|----------:|------:|-----------:|------------------:|
@@ -134,6 +155,7 @@ Then check a chip and route it:
 
 ```console
 $ mqt-scpd doctor -c inputs/33q/config.toml                   # check the chip and its configuration
+$ mqt-scpd plan -c inputs/33q/config.toml -o run-33q/         # run the planning stages
 $ mqt-scpd route -c inputs/33q/config.toml -o run-33q/        # run the complete flow
 $ mqt-scpd render run-33q/ --stage aligned -o 33q_routed.gds  # write the routed chip as GDSII
 $ mqt-scpd plot run-33q/ --stage aligned -o 33q_routed.svg    # draw it
