@@ -174,13 +174,6 @@ resonator_length_tolerance = 100.0
 max_feedline_utilization = 6
 feedline_terminations = 0
 
-[grid]
-# The launcher slot sits on the launcher port, so the blocked border of the
-# capacity grid must not cover it. A port inside the border is a freed cell in a
-# wall that no capacity chain reaches, and the partitioning around it collapses.
-launcher_offset_x = 0
-launcher_offset_y = 0
-
 [stages.assignment]
 # How many feedline chain ends the assignment puts on a launcher; every other
 # chain end is a termination. A figure per chip with no default, taken from the

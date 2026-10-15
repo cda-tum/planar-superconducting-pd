@@ -46,11 +46,6 @@ feedline_terminations = 0
 
 [grid]
 capacity_cells_x = 12
-# The launcher slot sits on the launcher port, so the blocked border of the
-# capacity grid must not cover it. A port inside the border is a freed cell in a
-# wall that no capacity chain reaches, and the partitioning around it collapses.
-launcher_offset_x = 7
-launcher_offset_y = 7
 
 [stages.assignment]
 # How many feedline chain ends the assignment puts on a launcher; every other
